@@ -3,7 +3,7 @@
 Requirements
 --------------
 
-GTC uses requires:
+GTC requires:
 
 * A modern, C++11 ready compiler such as `g++` version 4.9 or higher or `clang` version 3.2 or higher.
 * The CMake build system.
