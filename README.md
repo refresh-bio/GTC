@@ -93,6 +93,8 @@ Settings:
 	-maxAF X 	- report only sites with allele frequency among selected samples smaller than or equal to X (X - number between 0 and 1; default: 1)
 	-m X	- limit maximum memory usage to remember previous vectors to X MB (no limit by default)	
  ```
-  
 
+Authors
+--------------
+[Agnieszka Danek](https://github.com/agnieszkadanek) and Sebastian Deorowicz
 
