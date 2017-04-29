@@ -94,7 +94,12 @@ Settings:
 	-m X	- limit maximum memory usage to remember previous vectors to X MB (no limit by default)	
  ```
 
-Authors
+Developers
 --------------
-[Agnieszka Danek](https://github.com/agnieszkadanek) and Sebastian Deorowicz
+The GTC algorithm was invented by [Agnieszka Danek](https://github.com/agnieszkadanek) and Sebastian Deorowicz.
+The implementation is by Agnieszka Danek (mainly) and Sebastian Deorowicz.
+
+Publication
+--------------
+Danek, A., Deorowicz, S., GTC: an attempt to maintenance of huge genome collections compressed, [bioRxiv](http://biorxiv.org/content/early/2017/04/28/131649), 2017;
 
