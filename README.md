@@ -10,6 +10,7 @@ GTC requires:
 * A 64-bit operating system. Either Mac OS X or Linux are currently supported.
 * For best performance the processor of the system should support fast bit operations available in `SSE4.2`
 
+
 Installation
 --------------
 
