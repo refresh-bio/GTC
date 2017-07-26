@@ -321,7 +321,7 @@ int Decompressor::decompressRange(const string & range)
 
 int Decompressor::decompressSampleSmart(const string & range)
 {
-    if(smpl.no_samples > NO_SAMPLE_THRESHOLD || range != "")
+    if(smpl.no_samples > NO_SAMPLE_THRESHOLD)// || range != "")
     {
         return decompressRangeSample(range);
     }
@@ -650,7 +650,7 @@ int Decompressor::decompressRangeSample(const string & range)
     rev_perm = new uint32_t[pack.s.n_samples * pack.s.ploidy];
     
     bcf1_t * record = bcf_init();
-    uint32_t g, vec1_start, vec2_start;
+    uint32_t gg, vec1_start, vec2_start;
 //    uint32_t  end;
     uint32_t i = 0;
     
@@ -665,6 +665,9 @@ int Decompressor::decompressRangeSample(const string & range)
     
     uint32_t written_records = 0;
     kstring_t str = {0,0,0};
+    
+    char * tmp_vec = new char[pack.s.vec_len * 8 + 8];
+
     
     if(range == "")
     {
@@ -702,16 +705,19 @@ int Decompressor::decompressRangeSample(const string & range)
         str.l = 3;
         if (no_haplotypes == 0) bcf_enc_size(&str, 0, BCF_BT_NULL);
         
+       uint32_t  end;
         if(no_haplotypes & 7)//%8)
         {
-//            end = pack.s.vec_len - 1;
-            g = no_haplotypes & 7;//%8;
+            end = pack.s.vec_len - 1;
+            gg = no_haplotypes & 7;//%8;
         }
         else
         {
-//            end = pack.s.vec_len;
-            g = 0;
+            end = pack.s.vec_len;
+            gg = 0;
         }
+        
+        
         
         while (bcf_read1(bcf, hdr, record)>= 0 && written_records < records_to_process)
         {
@@ -743,7 +749,7 @@ int Decompressor::decompressRangeSample(const string & range)
             prev_block_id = block_id;
             
             char *pt = str.s + str.l;
-            for (g = 0; g < smpl.no_samples; ++g)
+         /*   for (uint32_t g = 0; g < smpl.no_samples; ++g)
             {
                 for(int p = 0; p < (int) pack.s.ploidy; p++)
                 {
@@ -753,7 +759,63 @@ int Decompressor::decompressRangeSample(const string & range)
             }
             
             str.l = str.l + smpl.no_samples * pack.s.ploidy;
+            str.s[str.l] = 0;*/
+            
+            
+            /////////////////
+            
+            for (vec1_start = 0; vec1_start < end; ++vec1_start)
+            {
+                memcpy(tmp_vec + (vec1_start << 3), lut[decomp_data[vec1_start]][decomp_data[vec2_start++]], 8);
+            }
+            
+            // str.l = str.l + (end << 3);
+            if(gg)
+            {
+                memcpy(tmp_vec + (end << 3), lut[decomp_data[vec1_start]][decomp_data[vec2_start]], gg);
+                //      str.l = str.l + g;
+            }
+            
+            
+            
+            /*  uint32_t which;
+            for (uint32_t g = 0; g < smpl.no_samples ; ++g)
+            {
+               // for(int p = 0; p < (int) pack.s.ploidy; p++)
+                {
+                    which = sampleIDs[g]*pack.s.ploidy;
+                    memcpy(pt + (g * pack.s.ploidy), tmp_vec + which, pack.s.ploidy);
+                }
+            }*/
+            
+            
+            uint32_t which, startWhich = sampleIDs[0]*pack.s.ploidy, count=1, start_g = 0;
+            for (uint32_t g = 1; g < smpl.no_samples ; ++g)
+            {
+                // for(int p = 0; p < (int) pack.s.ploidy; p++)
+                {
+                    which = sampleIDs[g]*pack.s.ploidy;// + p;
+                    if(which == startWhich + pack.s.ploidy*count)
+                    {
+                        count++;
+                    }
+                    else
+                    {
+                        //else
+                        {
+                            memcpy(pt + (start_g * pack.s.ploidy), tmp_vec + startWhich, pack.s.ploidy * count);
+                            count = 1;
+                            startWhich = which;
+                            start_g = g;
+                        }
+                    }
+                }
+            }
+            memcpy(pt + (start_g * pack.s.ploidy), tmp_vec + startWhich, pack.s.ploidy * count);
+            
+            str.l = str.l + smpl.no_samples*pack.s.ploidy;
             str.s[str.l] = 0;
+            
             bcf_update_info_int32(hdr, record, "_row", NULL, 0);
        
             // AC/AN count
@@ -786,6 +848,8 @@ int Decompressor::decompressRangeSample(const string & range)
         }
         done_unique.clear();
         
+        delete [] tmp_vec;
+
     }
     else
     {
@@ -822,9 +886,28 @@ int Decompressor::decompressRangeSample(const string & range)
         str.l = 3;
         if (no_haplotypes == 0) bcf_enc_size(&str, 0, BCF_BT_NULL);
         
-        bcf_info_t * a;
+        uint32_t  end;
+        if(no_haplotypes & 7)//%8)
+        {
+            end = pack.s.vec_len - 1;
+            gg = no_haplotypes & 7;//%8;
+        }
+        else
+        {
+            end = pack.s.vec_len;
+            gg = 0;
+        }
+
         
+        
+        
+        bcf_info_t * a;
         hts_itr_t * itr = bcf_itr_querys(bcf_idx, hdr, range.c_str());
+        
+        char * tmp_vec = new char[pack.s.vec_len * 8 + 8];
+        
+    
+        
         while(bcf_itr_next(bcf, itr, record) != -1 && written_records < records_to_process)
         {
             if(!i)
@@ -845,6 +928,7 @@ int Decompressor::decompressRangeSample(const string & range)
             {
                 // Get approproate permutations
                 pack.getPermArray(block_id, perm);
+                reverse_perm(perm, rev_perm, pack.s.n_samples*pack.s.ploidy);
             }
             fill_n(decomp_data, pack.s.vec_len*2, 0);
             
@@ -854,11 +938,14 @@ int Decompressor::decompressRangeSample(const string & range)
             decomp_vec_rrr_range(i++, 0, pack.s.vec_len, pos, decomp_data_perm, 0, false);
             
             // Permutations
-            decode_perm(pack.s.n_samples * pack.s.ploidy, vec2_start, perm, decomp_data_perm, decomp_data);
+          //  decode_perm(pack.s.n_samples * pack.s.ploidy, vec2_start, perm, decomp_data_perm, decomp_data);
+           
+            decode_perm_rev(pack.s.n_samples*pack.s.ploidy, vec2_start, rev_perm, decomp_data_perm, decomp_data);
             prev_block_id = block_id;
             
             char *pt = str.s + str.l;
-            for ( g = 0; g < smpl.no_samples ; ++g)
+         /*
+            for (uint32_t g = 0; g < smpl.no_samples ; ++g)
             {
                 for(int p = 0; p < (int) pack.s.ploidy; p++)
                 {
@@ -869,6 +956,52 @@ int Decompressor::decompressRangeSample(const string & range)
             
             str.l = str.l + smpl.no_samples*pack.s.ploidy;
             str.s[str.l] = 0;
+          // cout << i << " " << str.l << " " <<  (int) str.s[0] << (int) str.s[1] << (int) str.s[2] << (int) str.s[3] << (int) str.s[4] << (int) str.s[2002] << endl;
+          */
+            
+            
+            
+             /////////////////
+
+            for (vec1_start = 0; vec1_start < end; ++vec1_start)
+            {
+                memcpy(tmp_vec + (vec1_start << 3), lut[decomp_data[vec1_start]][decomp_data[vec2_start++]], 8);
+            }
+         
+           // str.l = str.l + (end << 3);
+            if(gg)
+            {
+                memcpy(tmp_vec + (end << 3), lut[decomp_data[vec1_start]][decomp_data[vec2_start]], gg);
+          //      str.l = str.l + g;
+            }
+  
+            uint32_t which, startWhich = sampleIDs[0]*pack.s.ploidy, count=1, start_g = 0;;
+            for (uint32_t g = 1; g < smpl.no_samples ; ++g)
+            {
+               // for(int p = 0; p < (int) pack.s.ploidy; p++)
+                {
+                    which = sampleIDs[g]*pack.s.ploidy;// + p;
+                    if(which == startWhich + pack.s.ploidy*count)
+                    {
+                        count++;
+                    }
+                    else
+                    {
+                        //else
+                        {
+                            memcpy(pt + (start_g * pack.s.ploidy), tmp_vec + startWhich, pack.s.ploidy * count);
+                            count = 1;
+                            startWhich = which;
+                            start_g = g;
+                        }
+                    }
+                }
+            }
+            memcpy(pt + (start_g * pack.s.ploidy), tmp_vec + startWhich, pack.s.ploidy * count);
+            
+            str.l = str.l + smpl.no_samples*pack.s.ploidy;
+            str.s[str.l] = 0;
+            
             
             bcf_update_info_int32(hdr, record, "_row", NULL, 0);
        
@@ -895,6 +1028,7 @@ int Decompressor::decompressRangeSample(const string & range)
             }
             
         }
+        
         bcf_itr_destroy(itr);
         
         for (auto & it:done_unique)
@@ -903,6 +1037,7 @@ int Decompressor::decompressRangeSample(const string & range)
         }
         done_unique.clear();
         
+        delete [] tmp_vec;
     }
     
     hts_close(out);
