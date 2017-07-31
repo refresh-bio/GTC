@@ -327,7 +327,7 @@ int Decompressor::decompressSampleSmart(const string & range)
     }
     initialLut();
     
-    std::vector<std::pair<uint32_t,uchar_t>> whichByte_whereInRes(smpl.no_samples*pack.s.ploidy);
+    std::vector<std::pair<uint32_t,uint32_t>> whichByte_whereInRes(smpl.no_samples*pack.s.ploidy); //std::vector<std::pair<uint32_t,uchar_t>> whichByte_whereInRes(smpl.no_samples*pack.s.ploidy);
     
     buff_bm.setBitMemory(&pack.bm);
     bool is_unique = false;
@@ -362,7 +362,7 @@ int Decompressor::decompressSampleSmart(const string & range)
     
     uint32_t block_id, prev_block_id = 0xFFFF;
 
-    uchar where;
+    uint32_t where; //uchar where;
     uint32_t ind_id_orig;
     
     unique_pos = 0;
@@ -1084,7 +1084,7 @@ bool Decompressor::setACAN(bcf_hdr_t * hdr, bcf1_t * record, const kstring_t & s
 }
 
 /************************/
-uchar_t Decompressor::get_vec_bytes(uint64_t vec_id, std::vector< std::pair<uint32_t, uchar_t> > & whichByte_whereInRes, uchar_t * resUnique, bool & is_uniqe_id, uint64_t & curr_zeros, uint64_t & curr_copy, uchar_t * resAll)
+uchar_t Decompressor::get_vec_bytes(uint64_t vec_id, std::vector< std::pair<uint32_t, uint32_t> > & whichByte_whereInRes, uchar_t * resUnique, bool & is_uniqe_id, uint64_t & curr_zeros, uint64_t & curr_copy, uchar_t * resAll) //uchar_t Decompressor::get_vec_bytes(uint64_t vec_id, std::vector< std::pair<uint32_t, uchar_t> > & whichByte_whereInRes, uchar_t * resUnique, bool & is_uniqe_id, uint64_t & curr_zeros, uint64_t & curr_copy, uchar_t * resAll)
 {
     
     uint32_t next_haplotype = 0; // Next byte to decode
