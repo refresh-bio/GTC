@@ -458,7 +458,7 @@ int Decompressor::decompressSampleSmart(const string & range)
                 // Sort by byte_no
                 std::sort(whichByte_whereInRes.begin(), whichByte_whereInRes.end());
                 
-                //count bytes to decode
+            /*    //count bytes to decode
                 uint32_t bytesToDecode = 0;
                 if(whichByte_whereInRes.size() > 0)
                     bytesToDecode = 1;
@@ -466,7 +466,7 @@ int Decompressor::decompressSampleSmart(const string & range)
                     if(whichByte_whereInRes[b].first != whichByte_whereInRes[b-1].first)
                         bytesToDecode++;
                 
-                
+              */
                 prev_block_id = block_id;
                 
                 // Get vectors from all block
@@ -589,14 +589,14 @@ int Decompressor::decompressSampleSmart(const string & range)
                 // Sort by byte_id
                 std::sort(whichByte_whereInRes.begin(), whichByte_whereInRes.end());
                 
-                //count bytes to decode
+            /*    //count bytes to decode
                 uint32_t bytesToDecode = 0;
                 if(whichByte_whereInRes.size() > 0)
                     bytesToDecode = 1;
                 for(int b = 1; b < whichByte_whereInRes.size(); b++)
                     if(whichByte_whereInRes[b].first != whichByte_whereInRes[b-1].first)
                         bytesToDecode++;
-               
+              */
                 prev_block_id = block_id;
                 
                 // Get vectors from all block
