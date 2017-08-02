@@ -65,7 +65,8 @@ class Decompressor {
     
     uchar_t get_vec_byte(uint32 vec_id, uint32 byte_no, uchar_t * resUnique, bool & is_uniqe_id, uint64_t & curr_zeros, uint64_t & curr_copy);
     
-    uchar_t get_vec_bytes(uint64_t vec_id, std::vector< std::pair<uint32_t, uint32_t> > & whichByte_whereInRes, uchar_t * resUnique, bool & is_uniqe_id, uint64_t & curr_zeros, uint64_t & curr_copy, uchar_t * resAll); //uchar_t get_vec_bytes(uint64_t vec_id, std::vector< std::pair<uint32_t, uchar_t> > & whichByte_whereInRes, uchar_t * resUnique, bool & is_uniqe_id, uint64_t & curr_zeros, uint64_t & curr_copy, uchar_t * resAll);    
+    uchar_t get_vec_bytes(uint64_t vec_id, std::vector< std::pair<uint32_t, uint32_t> > & whichByte_whereInRes, uchar_t * resUnique, bool & is_uniqe_id, uint64_t & curr_zeros, uint64_t & curr_copy, uchar_t * resAll, uint32_t unique_pos_first_in_block, uint32_t first_vec_in_block); //uchar_t get_vec_bytes(uint64_t vec_id, std::vector< std::pair<uint32_t, uchar_t> > & whichByte_whereInRes, uchar_t * resUnique, bool & is_uniqe_id, uint64_t & curr_zeros, uint64_t & curr_copy, uchar_t * resAll);
+    
     int decompressRangeSample(const string & range);
     bool setACAN(bcf_hdr_t * hdr, bcf1_t * record, const kstring_t & str);
     
