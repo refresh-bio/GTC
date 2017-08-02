@@ -331,7 +331,7 @@ int Decompressor::decompressSampleSmart(const string & range)
     
     buff_bm.setBitMemory(&pack.bm);
     bool is_unique = false;
-    uint32_t unique_pos = 0;
+    uint32_t unique_pos = 0, unique_pos_first_in_block;
     uint64_t  curr_zeros = 0, curr_copy = 0;
     
     uint64_t bv_size = pack.rrr_zeros_only_bit_vector[0].size();
@@ -410,13 +410,13 @@ int Decompressor::decompressSampleSmart(const string & range)
     if (no_haplotypes == 0) bcf_enc_size(&str, 0, BCF_BT_NULL);
     
     uchar_t *resUnique = nullptr;
-    resUnique = new uchar_t[pack.no_non_copy*smpl.no_samples*pack.s.ploidy];
-   // resUnique = new uchar_t[pack.s.max_no_vec_in_block*smpl.no_samples*pack.s.ploidy];
+   // resUnique = new uchar_t[pack.no_non_copy*smpl.no_samples*pack.s.ploidy];
+    resUnique = new uchar_t[pack.s.max_no_vec_in_block*smpl.no_samples*pack.s.ploidy];
     uchar_t * resAll = nullptr;
-     resAll = new uchar_t[pack.no_vec*smpl.no_samples*pack.s.ploidy];
-    //resAll = new uchar_t[pack.s.max_no_vec_in_block*smpl.no_samples*pack.s.ploidy];
+    // resAll = new uchar_t[pack.no_vec*smpl.no_samples*pack.s.ploidy];
+    resAll = new uchar_t[pack.s.max_no_vec_in_block*smpl.no_samples*pack.s.ploidy];
 
-    uint64_t first_vec_in_block = 0;
+    uint32_t first_vec_in_block = 0;
     
     if(range != "")
     {
@@ -438,10 +438,19 @@ int Decompressor::decompressSampleSmart(const string & range)
             {
                 first_vec_in_block = block_id*pack.s.max_no_vec_in_block;
                 
-                if(prev_block_id == 0xFFFF) //to set unique_pos (first processed block)
+                unique_pos = 0;
+                if(prev_block_id == 0xFFFF) //to set curr_zeros, curr_copy (first processed block)
                 {
-                    first_vec_in_block = 0;
+                    uint8_t parity = first_vec_in_block&1;
+                    uint32_t id = first_vec_in_block>>1;
+                    curr_zeros = pack.rrr_rank_zeros_only_bit_vector_0(id+((parity))) + pack.rrr_rank_zeros_only_bit_vector_1(id);
+                    curr_copy = pack.rrr_rank_copy_bit_vector[0](id+((parity))) + pack.rrr_rank_copy_bit_vector[1](id);
+                    //unique_pos_first_in_block = first_vec_in_block - curr_zeros - curr_copy;
+                    
+                   // first_vec_in_block = 0;
                 }
+                unique_pos_first_in_block = first_vec_in_block - curr_zeros - curr_copy;
+                
                 // Get approproate permutations
                 pack.getPermArray(block_id, perm);
                 
@@ -476,7 +485,7 @@ int Decompressor::decompressSampleSmart(const string & range)
                 
                 for (uint64_t i = first_vec_in_block; i <= var_idx*2+1; i++ )
                 {
-                    get_vec_bytes(i, whichByte_whereInRes, resUnique, is_unique, curr_zeros, curr_copy, resAll);
+                    get_vec_bytes(i, whichByte_whereInRes, resUnique, is_unique, curr_zeros, curr_copy, resAll, unique_pos_first_in_block, first_vec_in_block);
                 
                     if(is_unique)
                     {
@@ -485,7 +494,7 @@ int Decompressor::decompressSampleSmart(const string & range)
                            // resUnique[pack.no_non_copy*whichByte_whereInRes[idx].second  + unique_pos] = resAll[whichByte_whereInRes[idx].second * pack.no_vec + i];
                             
                        //     resUnique[unique_pos*pack.s.vec_len + whichByte_whereInRes[idx].second] = resAll[i * pack.s.vec_len + whichByte_whereInRes[idx].second];
-                             memcpy(resUnique + unique_pos*whichByte_whereInRes.size(), resAll + i * whichByte_whereInRes.size(), whichByte_whereInRes.size());
+                             memcpy(resUnique + unique_pos*whichByte_whereInRes.size(), resAll + (i-first_vec_in_block) * whichByte_whereInRes.size(), whichByte_whereInRes.size());
                         }
                         unique_pos++;
                     }
@@ -497,7 +506,7 @@ int Decompressor::decompressSampleSmart(const string & range)
                 //previous vectors in block are decompressed already
                 for (uint64_t i = var_idx*2; i <= var_idx*2+1; i++ )
                     
-                {    get_vec_bytes(i, whichByte_whereInRes, resUnique, is_unique, curr_zeros, curr_copy, resAll);
+                {    get_vec_bytes(i, whichByte_whereInRes, resUnique, is_unique, curr_zeros, curr_copy, resAll, unique_pos_first_in_block, first_vec_in_block);
                 
                     if(is_unique)
                     {
@@ -506,7 +515,7 @@ int Decompressor::decompressSampleSmart(const string & range)
                             // resUnique[pack.no_non_copy*whichByte_whereInRes[idx].second  + unique_pos] = resAll[whichByte_whereInRes[idx].second * pack.no_vec + i];
                             
                             //     resUnique[unique_pos*pack.s.vec_len + whichByte_whereInRes[idx].second] = resAll[i * pack.s.vec_len + whichByte_whereInRes[idx].second];
-                            memcpy(resUnique + unique_pos*whichByte_whereInRes.size(), resAll + i * whichByte_whereInRes.size(), whichByte_whereInRes.size());
+                            memcpy(resUnique + unique_pos*whichByte_whereInRes.size(), resAll + (i-first_vec_in_block) * whichByte_whereInRes.size(), whichByte_whereInRes.size());
                         }
                         unique_pos++;
                     }
@@ -526,7 +535,7 @@ int Decompressor::decompressSampleSmart(const string & range)
                 {
                     //start = (g*pack.s.ploidy+p)*pack.no_vec + var_idx*2; //2 vectors per variant
                     
-                      start = var_idx * 2 * whichByte_whereInRes.size() + (g*pack.s.ploidy+p);
+                      start = (var_idx * 2 - first_vec_in_block) * whichByte_whereInRes.size() + (g*pack.s.ploidy+p);
                   //  memcpy(pt + (g*pack.s.ploidy+p), lut[resAll[start]][resAll[start+1]]+(perm[sampleIDs[g]*pack.s.ploidy + p])%8, 1);
                       memcpy(pt + (g*pack.s.ploidy+p), lut[resAll[start]][resAll[start+whichByte_whereInRes.size()]] +(perm[sampleIDs[g]*pack.s.ploidy + p])%8, 1);
                 }
@@ -574,6 +583,22 @@ int Decompressor::decompressSampleSmart(const string & range)
             block_id = (var_idx*2) / pack.s.max_no_vec_in_block;
             if(block_id != prev_block_id) //get perm and find out which bytes need decoding
             {
+                first_vec_in_block = block_id*pack.s.max_no_vec_in_block;
+                unique_pos = 0;
+                if(prev_block_id == 0xFFFF) //to set curr_zeros, curr_copy (first processed block)
+                {
+                    uint8_t parity = first_vec_in_block&1;
+                    uint32_t id = first_vec_in_block>>1;
+                    curr_zeros = pack.rrr_rank_zeros_only_bit_vector_0(id+((parity))) + pack.rrr_rank_zeros_only_bit_vector_1(id);
+                    curr_copy = pack.rrr_rank_copy_bit_vector[0](id+((parity))) + pack.rrr_rank_copy_bit_vector[1](id);
+                    //unique_pos_first_in_block = first_vec_in_block - curr_zeros - curr_copy;
+                    
+                    // first_vec_in_block = 0;
+                }
+                unique_pos_first_in_block = first_vec_in_block - curr_zeros - curr_copy;
+                
+                
+                
                 //get approproate permutations
                 pack.getPermArray(block_id, perm);
                 
@@ -604,7 +629,7 @@ int Decompressor::decompressSampleSmart(const string & range)
                 last_vec_in_block = last_vec_in_block < pack.no_vec ? last_vec_in_block : pack.no_vec;
                 
                 for (uint64_t i = var_idx*2; i < last_vec_in_block; i++ ){
-                    get_vec_bytes(i, whichByte_whereInRes, resUnique, is_unique, curr_zeros, curr_copy, resAll);
+                    get_vec_bytes(i, whichByte_whereInRes, resUnique, is_unique, curr_zeros, curr_copy, resAll, unique_pos_first_in_block, first_vec_in_block);
                     
                     
                     if(is_unique)
@@ -612,7 +637,7 @@ int Decompressor::decompressSampleSmart(const string & range)
                       //  for(uint32_t idx = 0; idx < whichByte_whereInRes.size(); idx++)
                         {
                         //    resUnique[pack.no_non_copy*whichByte_whereInRes[idx].second  + unique_pos] = resAll[whichByte_whereInRes[idx].second * pack.no_vec + i];
-                           memcpy(resUnique + unique_pos*whichByte_whereInRes.size(), resAll + i * whichByte_whereInRes.size(), whichByte_whereInRes.size());
+                           memcpy(resUnique + unique_pos*whichByte_whereInRes.size(), resAll + (i-first_vec_in_block) * whichByte_whereInRes.size(), whichByte_whereInRes.size());
                         }
                         unique_pos++;
                     }
@@ -632,7 +657,7 @@ int Decompressor::decompressSampleSmart(const string & range)
                 {
                     //start = (g*pack.s.ploidy+p)*pack.no_vec+var_idx*2; //2 vectors per variant
                    
-                     start = var_idx * 2 * whichByte_whereInRes.size() + (g*pack.s.ploidy+p);
+                     start = (var_idx * 2 - first_vec_in_block) * whichByte_whereInRes.size() + (g*pack.s.ploidy+p);
                     //memcpy(pt + (g*pack.s.ploidy+p), lut[resAll[start]][resAll[start+1]]+(perm[sampleIDs[g]*pack.s.ploidy + p])%8, 1);
                      memcpy(pt + (g*pack.s.ploidy+p), lut[resAll[start]][resAll[start+whichByte_whereInRes.size()]] +(perm[sampleIDs[g]*pack.s.ploidy + p])%8, 1);
                 }
@@ -1137,8 +1162,12 @@ bool Decompressor::setACAN(bcf_hdr_t * hdr, bcf1_t * record, const kstring_t & s
 }
 
 /************************/
-uchar_t Decompressor::get_vec_bytes(uint64_t vec_id, std::vector< std::pair<uint32_t, uint32_t> > & whichByte_whereInRes, uchar_t * resUnique, bool & is_uniqe_id, uint64_t & curr_zeros, uint64_t & curr_copy, uchar_t * resAll) //uchar_t Decompressor::get_vec_bytes(uint64_t vec_id, std::vector< std::pair<uint32_t, uchar_t> > & whichByte_whereInRes, uchar_t * resUnique, bool & is_uniqe_id, uint64_t & curr_zeros, uint64_t & curr_copy, uchar_t * resAll)
+uchar_t Decompressor::get_vec_bytes(uint64_t vec_id, std::vector< std::pair<uint32_t, uint32_t> > & whichByte_whereInRes, uchar_t * resUnique, bool & is_uniqe_id, uint64_t & curr_zeros, uint64_t & curr_copy, uchar_t * resAll, uint32_t unique_pos_first_in_block, uint32_t first_vec_in_block) //uchar_t Decompressor::get_vec_bytes(uint64_t vec_id, std::vector< std::pair<uint32_t, uchar_t> > & whichByte_whereInRes, uchar_t * resUnique, bool & is_uniqe_id, uint64_t & curr_zeros, uint64_t & curr_copy, uchar_t * resAll)
 {
+    
+   //if(vec_id == 322560)
+   //     cout << "here" << endl;
+
     
     uint32_t next_haplotype = 0; // Next byte to decode
     
@@ -1172,7 +1201,7 @@ uchar_t Decompressor::get_vec_bytes(uint64_t vec_id, std::vector< std::pair<uint
             {
                // resAll[whichByte_whereInRes[idx].second * pack.no_vec + vec_id] = resUnique[pack.no_non_copy*whichByte_whereInRes[idx].second  + curr_non_copy_vec_id];
              //   resAll[vec_id * pack.s.vec_len + whichByte_whereInRes[idx].second] = resUnique[curr_non_copy_vec_id*pack.s.vec_len + whichByte_whereInRes[idx].second];
-                memcpy(resAll + vec_id * whichByte_whereInRes.size(), resUnique + curr_non_copy_vec_id*whichByte_whereInRes.size(), whichByte_whereInRes.size()) ;
+                memcpy(resAll + (vec_id-first_vec_in_block) * whichByte_whereInRes.size(), resUnique + (curr_non_copy_vec_id-unique_pos_first_in_block)*whichByte_whereInRes.size(), whichByte_whereInRes.size()) ;
                 
             }
             return 0;
@@ -1186,7 +1215,7 @@ uchar_t Decompressor::get_vec_bytes(uint64_t vec_id, std::vector< std::pair<uint
 //                resAll[idx * pack.no_vec + vec_id] = 0;  //zero everywhere
             //    resAll[vec_id * pack.s.vec_len + idx] = 0;
                 
-                fill_n(resAll + vec_id * whichByte_whereInRes.size(), whichByte_whereInRes.size(), 0);
+                fill_n(resAll + (vec_id - first_vec_in_block) * whichByte_whereInRes.size(), whichByte_whereInRes.size(), 0);
 
                 
             }
@@ -1209,7 +1238,7 @@ uchar_t Decompressor::get_vec_bytes(uint64_t vec_id, std::vector< std::pair<uint
            // resAll[idx * pack.no_vec + vec_id] = 0;
             resAll[vec_id * pack.s.vec_len + vec_id] = 0;
         }*/
-        fill_n(resAll + vec_id * whichByte_whereInRes.size(), whichByte_whereInRes.size(), 0);
+        fill_n(resAll + (vec_id - first_vec_in_block) * whichByte_whereInRes.size(), whichByte_whereInRes.size(), 0);
         
         return 0;
     }
@@ -1235,7 +1264,7 @@ uchar_t Decompressor::get_vec_bytes(uint64_t vec_id, std::vector< std::pair<uint
                 
           //      resAll[vec_id * pack.s.vec_len + whichByte_whereInRes[idx].second] = resUnique[curr_non_copy_vec_id*pack.s.vec_len + whichByte_whereInRes[idx].second];
                 
-                memcpy(resAll + vec_id * whichByte_whereInRes.size(), resUnique + curr_non_copy_vec_id*whichByte_whereInRes.size(), whichByte_whereInRes.size());
+                memcpy(resAll + (vec_id - first_vec_in_block) * whichByte_whereInRes.size(), resUnique + (curr_non_copy_vec_id-unique_pos_first_in_block)*whichByte_whereInRes.size(), whichByte_whereInRes.size());
                 
             }
             return 0;
@@ -1300,7 +1329,7 @@ uchar_t Decompressor::get_vec_bytes(uint64_t vec_id, std::vector< std::pair<uint
                 while(decoded_bytes == whichByte_whereInRes[next_haplotype].first) //curr byte == next byte to decode
                 {
                   //  resAll[whichByte_whereInRes[next_haplotype].second * pack.no_vec + vec_id] = byte;
-                    resAll[vec_id * whichByte_whereInRes.size() + whichByte_whereInRes[next_haplotype].second] = byte;
+                    resAll[(vec_id - first_vec_in_block) * whichByte_whereInRes.size() + whichByte_whereInRes[next_haplotype].second] = byte;
                     next_haplotype++;
                     if(next_haplotype == whichByte_whereInRes.size())
                         return 0; //all haplotypes decoded
@@ -1326,7 +1355,7 @@ uchar_t Decompressor::get_vec_bytes(uint64_t vec_id, std::vector< std::pair<uint
                 while(decoded_bytes + best_match_len  >  whichByte_whereInRes[next_haplotype].first)
                 {
                   //  resAll[whichByte_whereInRes[next_haplotype].second * pack.no_vec + vec_id] = resUnique[pack.no_non_copy*whichByte_whereInRes[next_haplotype].second  + best_pos];
-                    resAll[vec_id * whichByte_whereInRes.size() + whichByte_whereInRes[next_haplotype].second] = resUnique[best_pos*whichByte_whereInRes.size() + whichByte_whereInRes[next_haplotype].second];
+                    resAll[(vec_id-first_vec_in_block) * whichByte_whereInRes.size() + whichByte_whereInRes[next_haplotype].second] = resUnique[(best_pos-unique_pos_first_in_block)*whichByte_whereInRes.size() + whichByte_whereInRes[next_haplotype].second];
                     
                     next_haplotype++;
                     if(next_haplotype == whichByte_whereInRes.size())
@@ -1342,7 +1371,7 @@ uchar_t Decompressor::get_vec_bytes(uint64_t vec_id, std::vector< std::pair<uint
                 while(decoded_bytes + best_match_len  >  whichByte_whereInRes[next_haplotype].first)
                 {
                   //  resAll[whichByte_whereInRes[next_haplotype].second * pack.no_vec + vec_id] = resUnique[pack.no_non_copy*whichByte_whereInRes[next_haplotype].second  + best_pos];
-                     resAll[vec_id * whichByte_whereInRes.size() + whichByte_whereInRes[next_haplotype].second] = resUnique[best_pos*whichByte_whereInRes.size() + whichByte_whereInRes[next_haplotype].second];
+                     resAll[(vec_id -first_vec_in_block)* whichByte_whereInRes.size() + whichByte_whereInRes[next_haplotype].second] = resUnique[(best_pos-unique_pos_first_in_block)*whichByte_whereInRes.size() + whichByte_whereInRes[next_haplotype].second];
                     
                     next_haplotype++;
                     if(next_haplotype == whichByte_whereInRes.size())
@@ -1360,7 +1389,7 @@ uchar_t Decompressor::get_vec_bytes(uint64_t vec_id, std::vector< std::pair<uint
                 {
                     //resAll[whichByte_whereInRes[next_haplotype].second * pack.no_vec + vec_id] = 0;
                     
-                    resAll[vec_id * whichByte_whereInRes.size() + whichByte_whereInRes[next_haplotype].second] = 0;
+                    resAll[(vec_id -first_vec_in_block)* whichByte_whereInRes.size() + whichByte_whereInRes[next_haplotype].second] = 0;
                     
                     next_haplotype++;
                     if(next_haplotype == whichByte_whereInRes.size())
@@ -1377,7 +1406,7 @@ uchar_t Decompressor::get_vec_bytes(uint64_t vec_id, std::vector< std::pair<uint
                 while(decoded_bytes + ones_run_len  >  whichByte_whereInRes[next_haplotype].first)
                 {
                    // resAll[whichByte_whereInRes[next_haplotype].second * pack.no_vec + vec_id] = 0xFF;
-                    resAll[vec_id * whichByte_whereInRes.size() + whichByte_whereInRes[next_haplotype].second] = 0xFF;
+                    resAll[(vec_id -first_vec_in_block)* whichByte_whereInRes.size() + whichByte_whereInRes[next_haplotype].second] = 0xFF;
                     
                     next_haplotype++;
                     if(next_haplotype == whichByte_whereInRes.size())
@@ -1416,7 +1445,7 @@ uchar_t Decompressor::get_vec_bytes(uint64_t vec_id, std::vector< std::pair<uint
                         {
                             //resAll[whichByte_whereInRes[next_haplotype].second * pack.no_vec + vec_id] = byte;
                             
-                            resAll[vec_id * whichByte_whereInRes.size() + whichByte_whereInRes[next_haplotype].second] =  byte;
+                            resAll[(vec_id - first_vec_in_block) * whichByte_whereInRes.size() + whichByte_whereInRes[next_haplotype].second] =  byte;
                             next_haplotype++;
                             if(next_haplotype == whichByte_whereInRes.size())
                                 return 0; //all haplotypes decoded
