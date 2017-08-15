@@ -61,7 +61,7 @@ typedef unsigned int uint32_t;
 
 const uint32 MC_TRIALS = 100000;
 const uint32 MAX_HUF_LUT_LEN = 16;
-const uint32 NO_SAMPLE_THRESHOLD = 1000; //variable "where" and "whichByte_whereInRes" changed to uint32_t from uchar
+const uint32 NO_SAMPLE_THRESHOLD = 4000; //variable "where" and "whichByte_whereInRes" changed to uint32_t from uchar
 const uint32 MATCH_BITS_HUF = 8;  //8-10
 
 const uint32_t EMPTY   = 0xFFFFFFFFu;
