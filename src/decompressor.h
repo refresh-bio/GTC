@@ -75,7 +75,7 @@ class Decompressor {
 	void inline reverse_perm(uint32_t *perm, uint32_t *rev_perm, int no_haplotypes);
 	
 	uchar_t perm_lut[8];
-    uchar lut[256][256][8];
+    alignas(8) uchar lut[256][256][8];
     void initialLut();
     
     uchar_t *zeros_only_vector = nullptr;
