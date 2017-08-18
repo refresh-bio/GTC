@@ -48,6 +48,8 @@ int Decompressor::decompressRange(const string & range)
     kstring_t str = {0,0,0};
     uint32_t written_records = 0;    
    
+   // long long * tmp_vec_ll = (long long *)tmp_vec;
+    long long * lut_ll = nullptr;
     if(range == "")
     {
         // VCF/BCF processing
@@ -127,7 +129,9 @@ int Decompressor::decompressRange(const string & range)
             char *pt = str.s + str.l;
             for (vec1_start = 0; vec1_start < end; ++vec1_start)
             {
-                memcpy(pt + (vec1_start << 3), lut[decomp_data[vec1_start]][decomp_data[vec2_start++]], 8);
+                //memcpy(pt + (vec1_start << 3), lut[decomp_data[vec1_start]][decomp_data[vec2_start++]], 8);
+                lut_ll = (long long *)(lut[decomp_data[vec1_start]][decomp_data[vec2_start++]]);
+                *(pt + vec1_start) = *lut_ll;//*(long long *)lut[decomp_data[vec1_start]][decomp_data[vec2_start++]];
             }
             
             str.l = str.l + (end << 3);
@@ -256,7 +260,9 @@ int Decompressor::decompressRange(const string & range)
             char *pt = str.s + str.l;
             for (vec1_start = 0; vec1_start < end; ++vec1_start)
             {
-                memcpy(pt + (vec1_start << 3), lut[decomp_data[vec1_start]][decomp_data[vec2_start++]], 8);
+                //memcpy(pt + (vec1_start << 3), lut[decomp_data[vec1_start]][decomp_data[vec2_start++]], 8);
+                lut_ll = (long long *)(lut[decomp_data[vec1_start]][decomp_data[vec2_start++]]);
+                *(pt + vec1_start) = *lut_ll;//*(long long *)lut[decomp_data[vec1_start]][decomp_data[vec2_start++]];
             }
             
             str.l = str.l + (end << 3);
@@ -464,7 +470,7 @@ int Decompressor::decompressSampleSmart(const string & range)
                         ind_id_orig = sampleIDs[s]*pack.s.ploidy+p;
                         
                         where = s*pack.s.ploidy  + p;
-                        whichByte_whereInRes[where] =  std::make_pair(perm[ind_id_orig]/8, where); //now original_id_only
+                        whichByte_whereInRes[where] =  std::make_pair(perm[ind_id_orig]>>3, where); //now original_id_only
                     }
                 }
                 whichByte_whereInRes[smpl.no_samples*pack.s.ploidy] =  std::make_pair(0xFFFFFFFF, smpl.no_samples*pack.s.ploidy); //guard
@@ -541,12 +547,9 @@ int Decompressor::decompressSampleSmart(const string & range)
             {
                 for (uint32_t p = 0; p < pack.s.ploidy; p++ )
                 {
-                    
-                    //  start = (var_idx * 2 - first_vec_in_block) * no_haplotypes + (g*pack.s.ploidy+p);
-                      start =  (g*pack.s.ploidy+p);
-                    
-                  //  memcpy(pt + (g*pack.s.ploidy+p), lut[resAll[start]][resAll[start+1]]+(perm[sampleIDs[g]*pack.s.ploidy + p])%8, 1);
-                      memcpy(pt + (g*pack.s.ploidy+p), lut[resAll[start]][resAll[start+no_haplotypes]] +(perm[sampleIDs[g]*pack.s.ploidy + p])%8, 1);
+                    start =  (g*pack.s.ploidy+p);
+                    pt[start] = lut[resAll[start]][resAll[start+no_haplotypes]][(perm[sampleIDs[g]*pack.s.ploidy + p])%8];
+                    //memcpy(pt + (g*pack.s.ploidy+p), lut[resAll[start]][resAll[start+no_haplotypes]] +(perm[sampleIDs[g]*pack.s.ploidy + p])%8, 1);
                 }
             }
           
@@ -617,13 +620,13 @@ int Decompressor::decompressSampleSmart(const string & range)
                     {
                         ind_id_orig = sampleIDs[s]*pack.s.ploidy+p;
                         where = s*pack.s.ploidy  + p;
-                        whichByte_whereInRes[where] =  std::make_pair(perm[ind_id_orig]/8, where); // now original_id_only
+                        whichByte_whereInRes[where] =  std::make_pair(perm[ind_id_orig]>>3, where); // now original_id_only
                     }
                 }
                  whichByte_whereInRes[smpl.no_samples*pack.s.ploidy] =  std::make_pair(0xFFFFFFFF, smpl.no_samples*pack.s.ploidy); //guard
                 
                 
-                // Sort by byte_id
+                // Sort by byte_id (.first)
                 std::sort(whichByte_whereInRes.begin(), whichByte_whereInRes.end());
                 
             /*    //count bytes to decode
@@ -690,13 +693,9 @@ int Decompressor::decompressSampleSmart(const string & range)
             {
                 for (uint32_t p = 0; p < pack.s.ploidy; p++)
                 {
-                    //start = (g*pack.s.ploidy+p)*pack.no_vec+var_idx*2; //2 vectors per variant
-                   
-                   //  start = (var_idx * 2 - first_vec_in_block) * no_haplotypes + (g*pack.s.ploidy+p);
-                     start =  (g*pack.s.ploidy+p);
-                    
-                    //memcpy(pt + (g*pack.s.ploidy+p), lut[resAll[start]][resAll[start+1]]+(perm[sampleIDs[g]*pack.s.ploidy + p])%8, 1);
-                     memcpy(pt + (g*pack.s.ploidy+p), lut[resAll[start]][resAll[start+no_haplotypes]] +(perm[sampleIDs[g]*pack.s.ploidy + p])%8, 1);
+                    start =  (g*pack.s.ploidy+p);
+                    pt[start] = lut[resAll[start]][resAll[start+no_haplotypes]][(perm[sampleIDs[g]*pack.s.ploidy + p])%8];
+                    //memcpy(pt + (start), lut[resAll[start]][resAll[start+no_haplotypes]] +(perm[sampleIDs[g]*pack.s.ploidy + p])%8, 1);
                 }
             }
             
@@ -783,6 +782,9 @@ int Decompressor::decompressRangeSample(const string & range)
     
     char * tmp_vec = new char[pack.s.vec_len * 8 + 8];
 
+    long long * tmp_vec_ll = (long long *)tmp_vec;
+    long long * lut_ll = nullptr;
+    
     
     if(range == "")
     {
@@ -878,10 +880,13 @@ int Decompressor::decompressRangeSample(const string & range)
             
             
             /////////////////
-            
+
+          //  uint32_t start;
             for (vec1_start = 0; vec1_start < end; ++vec1_start)
             {
-                memcpy(tmp_vec + (vec1_start << 3), lut[decomp_data[vec1_start]][decomp_data[vec2_start++]], 8);
+                //memcpy(tmp_vec + (vec1_start << 3), lut[decomp_data[vec1_start]][decomp_data[vec2_start++]], 8);
+                lut_ll = (long long *)(lut[decomp_data[vec1_start]][decomp_data[vec2_start++]]);
+                *(tmp_vec_ll + vec1_start) = *lut_ll;//*(long long *)lut[decomp_data[vec1_start]][decomp_data[vec2_start++]];
             }
             
             // str.l = str.l + (end << 3);
@@ -892,8 +897,37 @@ int Decompressor::decompressRangeSample(const string & range)
             }
             
             
+            uint32_t which;
+             if(pack.s.ploidy == 2)
+             {
+                for (uint32_t g = 0; g < smpl.no_samples ; ++g)
+                {
+                    which = sampleIDs[g]*pack.s.ploidy;
+                    pt[g * pack.s.ploidy] = tmp_vec[which];
+                    pt[g * pack.s.ploidy + 1] = tmp_vec[which + 1];
+                }
+             }
+             else if (pack.s.ploidy == 1)
+             {
+                for (uint32_t g = 0; g < smpl.no_samples ; ++g)
+                {
+                    which = sampleIDs[g]*pack.s.ploidy;
+                    pt[g * pack.s.ploidy] = tmp_vec[which];
+                }
+             }
+             else
+             {
+                for (uint32_t g = 0; g < smpl.no_samples ; ++g)
+                {
+                    which = sampleIDs[g]*pack.s.ploidy;
+                    for(int p = 0; p < (int) pack.s.ploidy; p++)
+                        pt[g * pack.s.ploidy + p] = tmp_vec[which + p];
+                }
+             }
             
-            /*  uint32_t which;
+            
+            
+             /*
             for (uint32_t g = 0; g < smpl.no_samples ; ++g)
             {
                // for(int p = 0; p < (int) pack.s.ploidy; p++)
@@ -904,29 +938,6 @@ int Decompressor::decompressRangeSample(const string & range)
             }*/
             
             
-            uint32_t which, startWhich = sampleIDs[0]*pack.s.ploidy, count=1, start_g = 0;
-            for (uint32_t g = 1; g < smpl.no_samples ; ++g)
-            {
-                // for(int p = 0; p < (int) pack.s.ploidy; p++)
-                {
-                    which = sampleIDs[g]*pack.s.ploidy;// + p;
-                    if(which == startWhich + pack.s.ploidy*count)
-                    {
-                        count++;
-                    }
-                    else
-                    {
-                        //else
-                        {
-                            memcpy(pt + (start_g * pack.s.ploidy), tmp_vec + startWhich, pack.s.ploidy * count);
-                            count = 1;
-                            startWhich = which;
-                            start_g = g;
-                        }
-                    }
-                }
-            }
-            memcpy(pt + (start_g * pack.s.ploidy), tmp_vec + startWhich, pack.s.ploidy * count);
             
             str.l = str.l + smpl.no_samples*pack.s.ploidy;
             str.s[str.l] = 0;
@@ -1080,7 +1091,10 @@ int Decompressor::decompressRangeSample(const string & range)
 
             for (vec1_start = 0; vec1_start < end; ++vec1_start)
             {
-                memcpy(tmp_vec + (vec1_start << 3), lut[decomp_data[vec1_start]][decomp_data[vec2_start++]], 8);
+               // memcpy(tmp_vec + (vec1_start << 3), lut[decomp_data[vec1_start]][decomp_data[vec2_start++]], 8);
+                lut_ll = (long long *)(lut[decomp_data[vec1_start]][decomp_data[vec2_start++]]);
+                *(tmp_vec_ll + vec1_start) = *lut_ll;//*(long long *)lut[decomp_data[vec1_start]][decomp_data[vec2_start++]];
+
             }
          
            // str.l = str.l + (end << 3);
@@ -1090,29 +1104,36 @@ int Decompressor::decompressRangeSample(const string & range)
           //      str.l = str.l + g;
             }
   
-            uint32_t which, startWhich = sampleIDs[0]*pack.s.ploidy, count=1, start_g = 0;;
-            for (uint32_t g = 1; g < smpl.no_samples ; ++g)
+            
+            uint32_t which;
+            if(pack.s.ploidy == 2)
             {
-               // for(int p = 0; p < (int) pack.s.ploidy; p++)
+                for (uint32_t g = 0; g < smpl.no_samples ; ++g)
                 {
-                    which = sampleIDs[g]*pack.s.ploidy;// + p;
-                    if(which == startWhich + pack.s.ploidy*count)
-                    {
-                        count++;
-                    }
-                    else
-                    {
-                        //else
-                        {
-                            memcpy(pt + (start_g * pack.s.ploidy), tmp_vec + startWhich, pack.s.ploidy * count);
-                            count = 1;
-                            startWhich = which;
-                            start_g = g;
-                        }
-                    }
+                    which = sampleIDs[g]*pack.s.ploidy;
+                    pt[g * pack.s.ploidy] = tmp_vec[which];
+                    pt[g * pack.s.ploidy + 1] = tmp_vec[which + 1];
                 }
             }
-            memcpy(pt + (start_g * pack.s.ploidy), tmp_vec + startWhich, pack.s.ploidy * count);
+            else if (pack.s.ploidy == 1)
+            {
+                for (uint32_t g = 0; g < smpl.no_samples ; ++g)
+                {
+                    which = sampleIDs[g]*pack.s.ploidy;
+                    pt[g * pack.s.ploidy] = tmp_vec[which];
+                }
+            }
+            else
+            {
+                for (uint32_t g = 0; g < smpl.no_samples ; ++g)
+                {
+                    which = sampleIDs[g]*pack.s.ploidy;
+                    for(int p = 0; p < (int) pack.s.ploidy; p++)
+                        pt[g * pack.s.ploidy + p] = tmp_vec[which + p];
+                }
+            }
+
+            
             
             str.l = str.l + smpl.no_samples*pack.s.ploidy;
             str.s[str.l] = 0;
