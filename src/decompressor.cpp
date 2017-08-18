@@ -48,7 +48,7 @@ int Decompressor::decompressRange(const string & range)
     kstring_t str = {0,0,0};
     uint32_t written_records = 0;    
    
-   // long long * tmp_vec_ll = (long long *)tmp_vec;
+    long long * tmp_vec_ll = nullptr;
     long long * lut_ll = nullptr;
     if(range == "")
     {
@@ -127,11 +127,12 @@ int Decompressor::decompressRange(const string & range)
             prev_block_id = block_id;
            
             char *pt = str.s + str.l;
+            tmp_vec_ll = (long long *)pt;
             for (vec1_start = 0; vec1_start < end; ++vec1_start)
             {
                 //memcpy(pt + (vec1_start << 3), lut[decomp_data[vec1_start]][decomp_data[vec2_start++]], 8);
                 lut_ll = (long long *)(lut[decomp_data[vec1_start]][decomp_data[vec2_start++]]);
-                *(pt + vec1_start) = *lut_ll;//*(long long *)lut[decomp_data[vec1_start]][decomp_data[vec2_start++]];
+               *(tmp_vec_ll+ vec1_start) = *lut_ll;
             }
             
             str.l = str.l + (end << 3);
@@ -258,11 +259,12 @@ int Decompressor::decompressRange(const string & range)
             
             prev_block_id = block_id;
             char *pt = str.s + str.l;
+            tmp_vec_ll = (long long *)pt;
             for (vec1_start = 0; vec1_start < end; ++vec1_start)
             {
                 //memcpy(pt + (vec1_start << 3), lut[decomp_data[vec1_start]][decomp_data[vec2_start++]], 8);
                 lut_ll = (long long *)(lut[decomp_data[vec1_start]][decomp_data[vec2_start++]]);
-                *(pt + vec1_start) = *lut_ll;//*(long long *)lut[decomp_data[vec1_start]][decomp_data[vec2_start++]];
+                *(tmp_vec_ll+ vec1_start) = *lut_ll;
             }
             
             str.l = str.l + (end << 3);
