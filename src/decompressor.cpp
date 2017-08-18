@@ -95,6 +95,7 @@ int Decompressor::decompressRange(const string & range)
             g = 0;
         }
         
+        tmp_vec_ll = new long long[end];
         decomp_data = new uchar_t[pack.s.vec_len*2];
         decomp_data_perm = new uchar_t[pack.s.vec_len*2];
         
@@ -127,13 +128,15 @@ int Decompressor::decompressRange(const string & range)
             prev_block_id = block_id;
            
             char *pt = str.s + str.l;
-            tmp_vec_ll = (long long *)pt;
+            //tmp_vec_ll = (long long *)pt;
             for (vec1_start = 0; vec1_start < end; ++vec1_start)
             {
                 //memcpy(pt + (vec1_start << 3), lut[decomp_data[vec1_start]][decomp_data[vec2_start++]], 8);
                 lut_ll = (long long *)(lut[decomp_data[vec1_start]][decomp_data[vec2_start++]]);
-               *(tmp_vec_ll+ vec1_start) = *lut_ll;
+               //*(tmp_vec_ll+ vec1_start) = *lut_ll;
+                tmp_vec_ll[vec1_start] = *lut_ll;
             }
+            memcpy(pt, tmp_vec_ll, end << 3);
             
             str.l = str.l + (end << 3);
             if(g)
@@ -168,6 +171,7 @@ int Decompressor::decompressRange(const string & range)
             }            
         }        
         
+        delete [] tmp_vec_ll;
         for (auto & it:done_unique)
         {
             delete [] it.second;
@@ -219,6 +223,7 @@ int Decompressor::decompressRange(const string & range)
             g = 0;
         }
         
+        tmp_vec_ll = new long long[end];
         decomp_data = new uchar_t[pack.s.vec_len*2];
         decomp_data_perm = new uchar_t[pack.s.vec_len*2];
        
@@ -259,13 +264,15 @@ int Decompressor::decompressRange(const string & range)
             
             prev_block_id = block_id;
             char *pt = str.s + str.l;
-            tmp_vec_ll = (long long *)pt;
+            //tmp_vec_ll = (long long *)pt;
             for (vec1_start = 0; vec1_start < end; ++vec1_start)
             {
                 //memcpy(pt + (vec1_start << 3), lut[decomp_data[vec1_start]][decomp_data[vec2_start++]], 8);
                 lut_ll = (long long *)(lut[decomp_data[vec1_start]][decomp_data[vec2_start++]]);
-                *(tmp_vec_ll+ vec1_start) = *lut_ll;
+                //*(tmp_vec_ll+ vec1_start) = *lut_ll;
+                tmp_vec_ll[vec1_start] = *lut_ll;
             }
+            memcpy(pt, tmp_vec_ll, end << 3);
             
             str.l = str.l + (end << 3);
             if(g)
@@ -300,6 +307,7 @@ int Decompressor::decompressRange(const string & range)
         }
         bcf_itr_destroy(itr);
         
+        delete [] tmp_vec_ll;
         for (auto & it:done_unique)
         {
             delete [] it.second;
