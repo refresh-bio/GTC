@@ -790,9 +790,12 @@ int Decompressor::decompressRangeSample(const string & range)
     uint32_t written_records = 0;
     kstring_t str = {0,0,0};
     
-    char * tmp_vec = new char[pack.s.vec_len * 8 + 8];
-
-    long long * tmp_vec_ll = (long long *)tmp_vec;
+    //char * tmp_vec = new char[pack.s.vec_len * 8 + 8];
+    //long long * tmp_vec_ll = (long long *)tmp_vec;
+    long long * tmp_vec_ll = new long long[pack.s.vec_len + 1];
+    char *tmp_vec = (char*) tmp_vec_ll;
+    
+    
     long long * lut_ll = nullptr;
     
     
@@ -984,7 +987,7 @@ int Decompressor::decompressRangeSample(const string & range)
         }
         done_unique.clear();
         
-        delete [] tmp_vec;
+        //delete [] tmp_vec;
 
     }
     else
@@ -1183,11 +1186,13 @@ int Decompressor::decompressRangeSample(const string & range)
         }
         done_unique.clear();
         
-        delete [] tmp_vec;
+       // delete [] tmp_vec;
     }
     
     hts_close(out);
     
+    if(tmp_vec_ll)
+        delete [] tmp_vec_ll;
     if(decomp_data)
         delete [] decomp_data;
     if(decomp_data_perm)
