@@ -95,6 +95,29 @@ Settings:
 	-m X	- limit maximum memory usage to remember previous vectors to X MB (no limit by default)	
  ```
 
+Toy example
+--------------
+
+There is an example VCF file, `toy.vcf`, in the `toy_ex` folder, wchich can be used to test GTC
+
+To compress the example VCF file and store the archive called `toy_arch` in the `toy_ex` folder:
+```sh
+./gtc compress -o toy_ex/toy_arch toy_ex/toy.vcf
+```
+This will create an archive consisting of four files:
+`toy_arch.bcf` - BCF file with all variant sites description,
+`toy_arch.bcf.csi` - BCF index file,
+`toy_arch.gtc` - main archive of all genotypes,
+`toy_arch.ind` - list of all individuals.
+
+To view the compressed archive (to decompress it) in VCF format:
+```sh
+./gtc view toy_ex/toy_arch
+```
+
+For more options see Usage section.
+
+
 Developers
 --------------
 The GTC algorithm was invented by [Agnieszka Danek](https://github.com/agnieszkadanek) and Sebastian Deorowicz.
