@@ -337,7 +337,6 @@ int Decompressor::decompressRange(const string & range)
 
 int Decompressor::decompressSampleSmart(const string & range)
 {
-    cout << range  << endl;
   
     if(smpl.no_samples > NO_SAMPLE_THRESHOLD)// || range != "")
     {
