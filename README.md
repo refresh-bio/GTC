@@ -16,7 +16,7 @@ Installation
 
 To download, build and install GTC use the following commands.
 ```sh
-https://github.com/refresh-bio/GTC.git
+git clone https://github.com/refresh-bio/GTC.git
 cd GTC
 ./install.sh 
 make
