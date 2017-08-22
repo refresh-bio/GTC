@@ -1645,10 +1645,14 @@ int Decompressor::initOut()
         else
         {
             out = hts_open("-", write_mode);
-        }
-        
+	}   
     }
-    
+    if(!out)
+    {
+        std::cout << "could not open " << out << " file" << std::endl;
+        exit(1);
+    }
+	
     string filename(arch_name);
     filename = filename + ".ind";
     
