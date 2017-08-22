@@ -337,9 +337,42 @@ int Decompressor::decompressRange(const string & range)
 
 int Decompressor::decompressSampleSmart(const string & range)
 {
+    cout << range  << endl;
+  
     if(smpl.no_samples > NO_SAMPLE_THRESHOLD)// || range != "")
     {
         return decompressRangeSample(range);
+    }
+    else if (range != "")
+    {
+        
+        bcf1_t * record = bcf_init();
+        bcf_info_t * a = nullptr;
+        hts_itr_t * itr = bcf_itr_querys(bcf_idx, hdr, range.c_str());
+        uint32_t block_id, written_records = 0;
+        
+        if(bcf_itr_next(bcf, itr, record) != -1 && written_records < records_to_process)
+        {
+            a = bcf_get_info(hdr, record, "_row"); //bcf_get_info_id
+            block_id = (a->v1.i)*2/pack.s.max_no_vec_in_block;
+            written_records++;
+        
+            while(bcf_itr_next(bcf, itr, record) != -1 && written_records < records_to_process)
+            {
+                written_records++;
+            }
+            a = bcf_get_info(hdr, record, "_row"); //bcf_get_info_id
+            if( block_id == (a->v1.i)*2/pack.s.max_no_vec_in_block) //all records within the same block
+            {
+                bcf_destroy(record);
+                bcf_itr_destroy(itr);
+                return decompressRangeSample(range);
+            }
+        
+        }
+        bcf_destroy(record);
+        bcf_itr_destroy(itr);
+
     }
     initialLut();
     
@@ -895,6 +928,7 @@ int Decompressor::decompressRangeSample(const string & range)
             /////////////////
 
           //  uint32_t start;
+            
             for (vec1_start = 0; vec1_start < end; ++vec1_start)
             {
                 //memcpy(tmp_vec + (vec1_start << 3), lut[decomp_data[vec1_start]][decomp_data[vec2_start++]], 8);
@@ -1043,7 +1077,7 @@ int Decompressor::decompressRangeSample(const string & range)
         bcf_info_t * a;
         hts_itr_t * itr = bcf_itr_querys(bcf_idx, hdr, range.c_str());
         
-        char * tmp_vec = new char[pack.s.vec_len * 8 + 8];
+     //   char * tmp_vec = new char[pack.s.vec_len * 8 + 8];
         
     
         
@@ -1083,7 +1117,7 @@ int Decompressor::decompressRangeSample(const string & range)
             prev_block_id = block_id;
             
             char *pt = str.s + str.l;
-         /*
+    /*
             for (uint32_t g = 0; g < smpl.no_samples ; ++g)
             {
                 for(int p = 0; p < (int) pack.s.ploidy; p++)
@@ -1092,11 +1126,12 @@ int Decompressor::decompressRangeSample(const string & range)
                     memcpy(pt + (g * pack.s.ploidy + p), lut[decomp_data[vec1_start]][decomp_data[vec1_start + pack.s.vec_len]]+(sampleIDs[g] * pack.s.ploidy + p)%8, 1);
                 }
             }
-            
+     
             str.l = str.l + smpl.no_samples*pack.s.ploidy;
             str.s[str.l] = 0;
-          // cout << i << " " << str.l << " " <<  (int) str.s[0] << (int) str.s[1] << (int) str.s[2] << (int) str.s[3] << (int) str.s[4] << (int) str.s[2002] << endl;
           */
+          // cout << i << " " << str.l << " " <<  (int) str.s[0] << (int) str.s[1] << (int) str.s[2] << (int) str.s[3] << (int) str.s[4] << (int) str.s[2002] << endl;
+          
             
             
             
