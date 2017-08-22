@@ -107,7 +107,7 @@ To compress the example VCF file and store the archive called `toy_arch` in the 
 This will create an archive consisting of four files:
 * `toy_arch.bcf` - BCF file with all variant sites description,
 * `toy_arch.bcf.csi` - BCF index file,
-* `toy_arch.gtc` - main archive of all genotypes,
+* `toy_arch.gtc` - main archive with all genotypes compressed,
 * `toy_arch.ind` - list of all individuals.
 
 To view the compressed archive (to decompress it) in VCF format:
