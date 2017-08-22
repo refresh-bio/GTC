@@ -105,10 +105,10 @@ To compress the example VCF file and store the archive called `toy_arch` in the 
 ./gtc compress -o toy_ex/toy_arch toy_ex/toy.vcf
 ```
 This will create an archive consisting of four files:
-`toy_arch.bcf` - BCF file with all variant sites description,
-`toy_arch.bcf.csi` - BCF index file,
-`toy_arch.gtc` - main archive of all genotypes,
-`toy_arch.ind` - list of all individuals.
+* `toy_arch.bcf` - BCF file with all variant sites description,
+* `toy_arch.bcf.csi` - BCF index file,
+* `toy_arch.gtc` - main archive of all genotypes,
+* `toy_arch.ind` - list of all individuals.
 
 To view the compressed archive (to decompress it) in VCF format:
 ```sh
