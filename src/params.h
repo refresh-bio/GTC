@@ -77,7 +77,7 @@ struct Params{
         mode = '\0';
         
         minAC = 0;
-        maxAC = UINT32_MAX;
+        maxAC = INT32_MAX;
         
         minAF = 0;
         maxAF = 1;
