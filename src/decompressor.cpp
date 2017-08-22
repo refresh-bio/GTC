@@ -1257,7 +1257,7 @@ bool Decompressor::setACAN(bcf_hdr_t * hdr, bcf1_t * record, const kstring_t & s
             ac++;
     }
 
-    if(ac >= (int) minAC && ac <= (int) maxAC)
+    if(ac >= minAC && ac <= maxAC)
     {
         
         bcf_update_info_int32(hdr, record, "AN", &an, 1);
