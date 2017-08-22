@@ -46,7 +46,7 @@ class Decompressor {
     uint32_t records_to_process;
     uint32_t max_MB_memory;
     double minAF, maxAF;
-    uint32_t minAC, maxAC;
+    int32_t minAC, maxAC;
     
     // For BCF output
     htsFile * bcf = nullptr;
