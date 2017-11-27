@@ -474,7 +474,7 @@ void BlockInitCompressor::comp_vec(uint64_t vec_id)
                 break;
             ++idx_oldest_vec_in_ht_parts;
         }
-        for (i = 0; i < s->vec_len - HASH_KEY_LEN2 + 1; ++i)
+        for (i = 0;  s->vec_len - i > HASH_KEY_LEN2 - 1; ++i)
             ht_remove(idx_oldest_vec_in_ht_parts, i);
         ++idx_oldest_vec_in_ht_parts;
     }
