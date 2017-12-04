@@ -6,8 +6,11 @@ else                          # If uname not available => 'not'
     uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
 endif
 
-prefix      = /usr/local  # default install location (binary placed in the /bin folder)
-exec_prefix = $(prefix)  # optional install location 
+# default install location (binary placed in the /bin folder)
+prefix      = /usr/local
+
+# optional install location
+exec_prefix = $(prefix)
 
 LIBS_DIR=lib
 INCLUDES_DIR=include
