@@ -15,7 +15,7 @@ exec_prefix = $(prefix)
 LIBS_DIR=lib
 INCLUDES_DIR=include
 CFLAGS=-Wall -O3 -m64 -std=c++11 -pthread -I $(INCLUDES_DIR) -mpopcnt 
-CLINK=-O3 -lm -lz -std=c++11 -lpthread -mpopcnt 
+CLINK=-O3 -lm -std=c++11 -lpthread -mpopcnt -lz
 
 
 ifeq ($(uname_S),Linux)
@@ -50,7 +50,7 @@ gtc:	src/bit_memory.o \
 	src/samples.o \
 	src/VCFManager.o \
 	include/cpp-mmf/memory_mapped_file.o
-	$(CC) $(CLINK) -o gtc \
+	$(CC) -o gtc \
 	src/bit_memory.o \
 	src/block_init_compressor.o \
 	src/buffered_bm.o \
@@ -65,8 +65,9 @@ gtc:	src/bit_memory.o \
 	src/VCFManager.o \
 	include/cpp-mmf/memory_mapped_file.o \
 	$(LIBS_DIR)/libhts.a \
-	$(LIBS_DIR)/libsdsl.a
-
+	$(LIBS_DIR)/libsdsl.a \
+	$(CLINK)
+	
 clean:
 	-rm include/cpp-mmf/*.o
 	-rm src/*.o
