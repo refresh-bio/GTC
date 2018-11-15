@@ -225,7 +225,7 @@ void CompressedPack::getPermArray(int block_id, uint32_t * perm)
     uint32_t no_haplotypes = s.n_samples * s.ploidy;
     uint32_t bits_used_single = s.bits_used(no_haplotypes);
     uint32_t single_perm_bv_size = bits_used_single * no_haplotypes; //in bits
-    single_perm_bv_size = single_perm_bv_size/8 + single_perm_bv_size%8; //in bytes
+    single_perm_bv_size = single_perm_bv_size/8 + (single_perm_bv_size%8?1:0); //in bytes
     bv_perm.SetPos(block_id * single_perm_bv_size);
     
     for(uint32_t i = 0; i < no_haplotypes; ++i)
