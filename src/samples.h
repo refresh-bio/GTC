@@ -1,5 +1,5 @@
 /*
- This file is a part of GTC software distributed under GNU GPL 2 licence.
+ This file is a part of GTC software distributed under GNU GPL 3 licence.
  
  Authors: Agnieszka Danek and Sebastian Deorowicz
  
