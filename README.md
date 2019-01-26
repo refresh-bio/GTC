@@ -117,6 +117,13 @@ To view the compressed archive (to decompress it) in VCF format:
 
 For more options see Usage section.
 
+Dockerfile
+--------------
+Dockerfile can be used to build a Docker image with all necessary dependencies and GTC compressor. The image is based on Ubuntu 16.04. To build a Docker image and run a Docker container, you need Docker Desktop (https://www.docker.com). Example commands (run it within a directory with Dockerfile):
+```docker build -t ubuntu-gtc .
+docker run -it ubuntu-gtc
+```
+Note: The Docker image is not intended as a way of using GTC. It can be used to test the instalation process and basic operation of the GTC tool.
 
 Developers
 --------------
