@@ -98,7 +98,7 @@ Settings:
 Toy example
 --------------
 
-There is an example VCF file, `toy.vcf`, in the `toy_ex` folder, wchich can be used to test GTC
+There is an example VCF file, `toy.vcf`, in the `toy_ex` folder, which can be used to test GTC
 
 To compress the example VCF file and store the archive called `toy_arch` in the `toy_ex` folder:
 ```sh
