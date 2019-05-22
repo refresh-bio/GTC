@@ -188,7 +188,7 @@ bool VCFManager::ProcessInVCF()
             if(rec->n_allele==3 && strcmp(rec->d.allele[2], "<M>") == 0)
             {
                 // Check if alt_desc size is enough for alleles
-                uint64_t allele_size = strlen(rec->d.allele[0])+strlen(rec->d.allele[1])+5;
+                uint64_t allele_size = strlen(rec->d.allele[0])+strlen(rec->d.allele[1])+6;
                 if(allele_size > 256)
                 {
                     delete [] alt_desc;
@@ -219,7 +219,7 @@ bool VCFManager::ProcessInVCF()
                 {
                                       
                     // Check if alt_desc size is enough for alleles
-                    uint64_t allele_size = strlen(rec->d.allele[0])+strlen(rec->d.allele[a])+5;
+                    uint64_t allele_size = strlen(rec->d.allele[0])+strlen(rec->d.allele[a])+6;
                     if(allele_size > 256)
                     {
                         delete [] alt_desc;
