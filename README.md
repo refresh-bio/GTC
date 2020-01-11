@@ -133,7 +133,7 @@ The implementation is by Agnieszka Danek (mainly) and Sebastian Deorowicz.
 
 Publication
 --------------
-Danek, A., Deorowicz, S., GTC: how to maintain huge genotype collections in a compressed form, [Bioinformatics](https://academic.oup.com/bioinformatics/advance-article-abstract/doi/10.1093/bioinformatics/bty023/4813738?redirectedFrom=fulltext), 2018, bty023;
+Danek, A., Deorowicz, S., GTC: how to maintain huge genotype collections in a compressed form, [Bioinformatics](https://academic.oup.com/bioinformatics/advance-article-abstract/doi/10.1093/bioinformatics/bty023/4813738?redirectedFrom=fulltext), 2018, 34(11):1834-1840.
 
 <!--- Danek, A., Deorowicz, S., GTC: an attempt to maintenance of huge genome collections compressed, [bioRxiv](http://biorxiv.org/content/early/2017/04/28/131649), 2017; --->
 
