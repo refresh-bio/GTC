@@ -167,7 +167,7 @@ bool VCFManager::ProcessInVCF()
         bcf_unpack(rec, BCF_UN_ALL);  // Unpack all in record
         if(rec->d.fmt->n !=  (int) ploidy)
         {
-            std::cout << "Wrong ploidy (not equal to " << ploidy << ") for record at position " << rec->pos <<".\n";
+            std::cout << "Wrong ploidy (not equal to " << ploidy << ") for record at position " << rec->pos+1 <<".\n";
             std::cout << "Repair VCF file OR set correct ploidy using -p option\n";
             exit(9);
         }
