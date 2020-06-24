@@ -1,5 +1,7 @@
 # GTC - GenoTypes Compressor
 
+[![GitHub downloads](https://img.shields.io/github/downloads/refresh-bio/gtc/total.svg?style=flag&label=GitHub%20downloads)](https://github.com/refresh-bio/GTC/releases)
+
 Requirements
 --------------
 
