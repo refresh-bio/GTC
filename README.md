@@ -1,5 +1,8 @@
 # GTC - GenoTypes Compressor
 
+GenoType Compressor is a tool to represent a collection of genotypes in a highly compact form. As an input it takes the VCF file. The compressed structure supports fast queries of various types.
+We were able to compress the genomes from the HRC (27,165 genotypes and about 40 million variants) from 4.3TB (uncompressed VCF file) to less than 4GB. More details can be found in our paper pointed below.
+
 Requirements
 --------------
 
@@ -131,9 +134,7 @@ Developers
 The GTC algorithm was invented by [Agnieszka Danek](https://github.com/agnieszkadanek) and Sebastian Deorowicz.
 The implementation is by Agnieszka Danek (mainly) and Sebastian Deorowicz.
 
-Publication
+Citing
 --------------
-Danek, A., Deorowicz, S., GTC: how to maintain huge genotype collections in a compressed form, [Bioinformatics](https://academic.oup.com/bioinformatics/advance-article-abstract/doi/10.1093/bioinformatics/bty023/4813738?redirectedFrom=fulltext), 2018, 34(11):1834-1840.
-
-<!--- Danek, A., Deorowicz, S., GTC: an attempt to maintenance of huge genome collections compressed, [bioRxiv](http://biorxiv.org/content/early/2017/04/28/131649), 2017; --->
+[Danek, A., Deorowicz, S. (2018) GTC: how to maintain huge genotype collections in a compressed form, Bioinformatics 34(11):1834&ndash;1840.](https://doi.org/10.1093/bioinformatics/bty023)
 
