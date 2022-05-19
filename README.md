@@ -131,7 +131,7 @@ Note: The Docker image is not intended as a way of using GTC. It can be used to 
 
 Developers
 --------------
-The GTC algorithm was invented by [Agnieszka Danek](https://github.com/agnieszkadanek) and Sebastian Deorowicz.
+The GTC algorithm was invented by Agnieszka Danek and Sebastian Deorowicz.
 The implementation is by Agnieszka Danek (mainly) and Sebastian Deorowicz.
 
 Citing
