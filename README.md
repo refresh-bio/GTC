@@ -1,5 +1,7 @@
 # GTC - GenoTypes Compressor
 
+[![Bioinformatics 10.1093/bioinformatics/bty023](https://img.shields.io/badge/Bioinformatics%202018-10.1093%2Fbioinformatics%2Fbty023-blue)](https://doi.org/10.1093/bioinformatics/bty023)
+
 GenoType Compressor is a tool to represent a collection of genotypes in a highly compact form. As an input it takes the VCF file. The compressed structure supports fast queries of various types.
 We were able to compress the genomes from the HRC (27,165 genotypes and about 40 million variants) from 4.3TB (uncompressed VCF file) to less than 4GB. More details can be found in our paper pointed below.
 
